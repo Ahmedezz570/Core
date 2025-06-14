@@ -49,7 +49,7 @@ console.log(data);
   }
 }
 
-// استخراج الرقم من صيغة زي "5x3" أو "10+5"
+
 function extractNumber(value) {
   if (!value) return 0;
   try {

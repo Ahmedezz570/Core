@@ -28,7 +28,7 @@ const toolSchema = new mongoose.Schema({
     default: 'Available'
   },
   category: {
-    type: String, // زى Control, PCB, Structure
+    type: String,
     required: true
   },
   image: {

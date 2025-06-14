@@ -75,7 +75,7 @@ router.delete('/delete/:id', async (req, res) => {
 // Get /api/tools/all
   router.get('/all', async (req, res) => {
     try {
-      const tools = await t.find();
+      const tools = await Tool.find();
       res.status(200).json(tools);
     } catch (error) {
       console.error("Error fetching tools:", error);
@@ -87,7 +87,7 @@ router.delete('/delete/:id', async (req, res) => {
     const { id } = req.params; 
   
     try {
-      const tool = await t.findById(id); 
+      const tool = await Tool.findById(id); 
       if (!tool) {
         return res.status(404).json({ message: 'Tool not found' }); 
       }

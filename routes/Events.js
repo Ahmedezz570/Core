@@ -4,30 +4,46 @@ const Event = require("../models/EventSchema");
 
 router.post("/add", async (req, res) => {
   try {
-    const { title, description, location, date,type, imageUrl, photos } = req.body;
+    const { title, description, location, date, type, imageUrl, photos ,googleFormUrl} = req.body;
 
+    const allowedTypes = ['competition', 'update', 'workshop', 'announcement', 'tranning'];
+    if (!allowedTypes.includes(type)) {
+      return res.status(400).json({ error: "Invalid event type" });
+    }
+
+    
     const newEvent = new Event({
       title,
       description,
       location,
       date,
-      type,  
+      type,
       imageUrl,
-      photos
+      photos,
+      googleFormUrl
     });
- const allowedTypes = ['competition', 'update', 'workshop', 'announcement'];
-    if (!allowedTypes.includes(type)) {
-      return res.status(400).json({ error: "Invalid event type" });
-    }
+
     const savedEvent = await newEvent.save();
+
+    const allEvents = await Event.find().sort({ createdAt: 1 }); 
+
+   
+    if (allEvents.length > 6) {
+      const eventsToDelete = allEvents.slice(0, allEvents.length - 6); 
+      const deletePromises = eventsToDelete.map((event) => Event.findByIdAndDelete(event._id));
+      await Promise.all(deletePromises);
+    }
+
     res.status(201).json(savedEvent);
   } catch (err) {
-    res.status(500).json({ error: "Event add error " });
+    console.error(err);
+    res.status(500).json({ error: "Event add error" });
   }
 });
 
 
-router.get("/", async (req, res) => {
+
+router.get("/all", async (req, res) => {
   try {
     const events = await Event.find(); 
     res.json(events);

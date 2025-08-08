@@ -1,6 +1,5 @@
 require("dotenv").config();
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require('cors');
 const app = express();
 const authRoutes = require('./routes/auth');
@@ -9,7 +8,7 @@ const userRoutes = require('./routes/users');
  const requestRoutes = require('./routes/Request'); 
  const toolHistoryRoutes = require('./routes/History'); 
  const eventRoutes = require("./routes/Events");
-
+const connectDB = require('./config/DB');
 const PORT_1 = 3000;
 
 app.use(cors());
@@ -17,15 +16,31 @@ app.use(express.json());
 
 
 app.use('/api/auth', authRoutes);
-app.use('/api/tools', toolRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api', toolRoutes);
+app.use('/api', userRoutes); 
 app.use('/api', requestRoutes);
-app.use('/api/history', toolHistoryRoutes);
+app.use('/api/history', toolHistoryRoutes);  
 app.use("/api/events", eventRoutes);
-
-app.get("/", (req, res) => {
-  res.send("Server is running.......");   
+ 
+  app.get("/", (req, res) => { 
+  res.send("Serverrr is running.......");   
 });
+app.get("/ping", (req, res) => {    
+  res.send("pong");
+});
+  
+connectDB();
+// db.stats();
+// if (require.main === module) {
+  
+  
+// }
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`🚀 Server is running on http://localhost:${PORT}`);
+  });
+// module.exports = app;
+
 
 // const Config = require('./models/ConfigSchema');
 
@@ -39,18 +54,9 @@ app.get("/", (req, res) => {
 
 // initializeConfig();
 
-
-
-const XLSX = require('xlsx');
-const path = require('path');
-const Tool = require('./scripts/toolschema');
-mongoose.connect("mongodb+srv://ahmedez570:7253416@cluster.bxlgmut.mongodb.net/?retryWrites=true&w=majority")
-// .then(importExcelData)
-.then(() => console.log("✅ Connected to MongoDB")) 
-.catch((err) => console.error("❌ MongoDB connection error:", err)); 
-app.listen(PORT_1, () => {
-  console.log(`🚀 Server is running on http://localhost:${PORT_1}`);
-});
+// const XLSX = require('xlsx');
+// const path = require('path');
+// const Tool = require('./scripts/toolschema');
 
 // async function importExcelData() {
 //   try {

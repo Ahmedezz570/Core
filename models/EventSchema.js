@@ -13,7 +13,6 @@ const EventSchema = new mongoose.Schema({
   },
   location: {
     type: String,
-    required: true,
     trim: true
   },
   date: {
@@ -22,7 +21,7 @@ const EventSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['competition', 'update', 'workshop', 'announcement'], 
+    enum: ['competition', 'update', 'workshop', 'announcement' , 'tranning'], 
     required: true
   },
   imageUrl: {
@@ -32,6 +31,10 @@ const EventSchema = new mongoose.Schema({
   photos: {
     type: [String],
     default: []
+  },
+  googleFormUrl: {
+    type: String,
+    default: ""
   }
 }, {
   timestamps: true

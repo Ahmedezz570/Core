@@ -1,78 +1,69 @@
-// routes/userRoutes.js
 const express = require("express");
-const bcrypt = require('bcrypt');
-const User = require("../models/UsersSchema"); 
+
 const router = express.Router();
+const multer = require('multer');
+const xlsx = require('xlsx');
 
-// Create a new user
-router.post("/users", async (req, res) => {
-  const { name, email, password, role, studentId } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10); 
+const upload = multer();
+const bcrypt = require('bcrypt');
+
+
+const User = require("../models/UsersSchema");
+const {AllUsers , AddUser , UpdateUser , DeleteUser , deleteAll}= require("../controllers/usersControllers");
+
+router.post("/users", AddUser);
+
+router.put("/users/:id",UpdateUser);
+
+
+router.delete("/users/:id", DeleteUser);
+
+router.get("/users/all", AllUsers);
+
+router.delete("/deleteAll" , deleteAll);
+
+router.get("/ping", (req, res) => {
+  res.send("pong from /api/ping");
+});
+
+
+
+
+// Route to upload Excel for users
+router.post('/upload-users', upload.single('file'), async (req, res) => {
   try {
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword, 
-      role,
-      studentId,
-    });
-    
-    await newUser.save();
-    res.status(201).json(newUser);
+    console.log("Received user upload request");
+    const fileBuffer = req.file.buffer;
+
+    const workbook = xlsx.read(fileBuffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const jsonData = xlsx.utils.sheet_to_json(sheet);
+    console.log("Parsed Users Data:", jsonData);
+
+    // Hash passwords before inserting
+    const usersData = await Promise.all(jsonData.map(async (item, index) => {
+      const hashedPassword = await bcrypt.hash(String(item.password), 10);
+
+
+      return {
+        name: item.name || `Unnamed ${index + 1}`,
+        email: item.email,
+        password: hashedPassword,
+        role: 'student',
+        studentId: item.studentId || `SID${index + 1}`,
+      };
+    }));
+
+    await User.insertMany(usersData);
+
+    res.status(200).json({ message: `${usersData.length} users imported successfully!` });
   } catch (error) {
-    res.status(400).json({ message: error.message }); 
+    console.error("Error importing users:", error);
+    res.status(500).json({ message: 'Failed to import users from Excel.' });
   }
 });
 
-// Update a user
-router.put("/users/:id", async (req, res) => {
-  const { id } = req.params;
-  const { name, email, password, role, studentId } = req.body;
-  
-  try {
-    const updatedUser = await User.findByIdAndUpdate(id, {
-      name,
-      email,
-      password,
-      role,
-      studentId,
-    }, { new: true });
 
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
 
-    res.status(200).json(updatedUser);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
-
-// Delete a user
-router.delete("/users/:id", async (req, res) => {
-  const { id } = req.params;
-
-  try { 
-    const deletedUser = await User.findByIdAndDelete(id);
-
-    if (!deletedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.status(200).json({ message: "User deleted successfully" });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
-
-// Get all users
-router.get("/users", async (req, res) => {
-  try {
-    const users = await User.find();
-    res.status(200).json(users);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
-
-module.exports = router;
+module.exports = router;    

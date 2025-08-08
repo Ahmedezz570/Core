@@ -18,11 +18,18 @@ const toolHistorySchema = new mongoose.Schema({
   },
   action: {
     type: String,
-    enum: ['pending', 'rented', 'returned', 'updated', 'deleted' , 'created'],
+    enum: ['pending', 'rented',  'returned', 'updated', 'deleted' , 'created'],
     required: true
   },
   date: {
     type: Date,
+  },
+  dataReturned: {
+    type: Date,
+    default: null
+  },
+   quantity: {
+    type: Number,
   }
 });
 
